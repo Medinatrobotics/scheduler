@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CompoundScheduler">
+<title>CompoundScheduler — Pharmaceutical Automation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4f8; --surface:#fff; --surface2:#f8fafc; --border:#e2e8f0; --border2:#cbd5e1;
+  --accent:#0f6fff; --accent-light:#eff6ff; --accent-dark:#0a4fd4;
+  --success:#059669; --success-light:#ecfdf5;
+  --warning:#d97706; --warning-light:#fffbeb;
+  --danger:#dc2626; --danger-light:#fef2f2;
+  --purple:#7c3aed; --purple-light:#f5f3ff;
+  --teal:#0891b2; --teal-light:#ecfeff;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8; --text4:#cbd5e1;
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif;
+  --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
+  --r:10px; --r-sm:6px; --r-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:var(--mono);letter-spacing:-1px}
+.logo-name{font-size:15px;font-weight:600;color:var(--text)}
+.logo-name em{color:var(--accent);font-style:normal}
+.logo-ver{font-size:10px;font-family:var(--mono);background:var(--accent-light);color:var(--accent);padding:2px 7px;border-radius:20px;border:1px solid #bfdbfe}
+.sys-badge{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);padding:5px 11px;background:var(--success-light);border:1px solid #a7f3d0;border-radius:20px}
+.sys-badge::before{content:'';width:6px;height:6px;background:var(--success);border-radius:50%;animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px}
+.tab-btn{padding:14px 16px;border:none;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text);background:var(--surface2)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* LAYOUT */
+.main{padding:24px 28px;max-width:1600px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+.two-col{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:18px}
+.card-title{font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.4px}
+.card-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:600;letter-spacing:-.3px}
+.page-title span{color:var(--accent)}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:none;border-radius:var(--r-sm);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-dark);box-shadow:0 2px 8px rgba(15,111,255,.3)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#047857}
+.btn-outline{background:var(--surface);color:var(--text2);border:1px solid var(--border2)}.btn-outline:hover{background:var(--surface2);color:var(--text)}
+.btn-danger-soft{background:var(--danger-light);color:var(--danger);border:1px solid #fecaca}.btn-danger-soft:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-lg{padding:10px 20px;font-size:14px;font-weight:600}
+.btn-full{width:100%;justify-content:center}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,111,255,.1)}
+input[type=range]{padding:0;background:transparent;border:none;box-shadow:none;accent-color:var(--accent)}
+
+/* TABLE */
+.table-wrap{overflow:hidden;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface)}
+thead{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--mono);white-space:nowrap}
+.b-urgent{background:var(--danger-light);color:var(--danger);border:1px solid #fca5a5}
+.b-high{background:var(--warning-light);color:var(--warning);border:1px solid #fcd34d}
+.b-normal{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.b-advance{background:var(--purple-light);color:var(--purple);border:1px solid #c4b5fd}
+.b-multi{background:var(--accent-light);color:var(--accent);border:1px solid #93c5fd}
+.b-flacon{background:#f0fdf4;color:#15803d;border:1px solid #86efac}
+.b-recon{background:var(--warning-light);color:var(--warning);border:1px solid #fcd34d}
+.b-residue{background:var(--teal-light);color:var(--teal);border:1px solid #a5f3fc}
+.b-ok{background:var(--success-light);color:var(--success);border:1px solid #a7f3d0}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-sel{padding:6px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);cursor:pointer}
+
+/* STATS */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.stat-val{font-size:28px;font-weight:600;line-height:1;letter-spacing:-1px}
+.stat-label{font-size:12px;font-weight:500;color:var(--text2);margin-top:3px}
+.stat-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.c-blue{color:var(--accent)}.c-green{color:var(--success)}.c-amber{color:var(--warning)}.c-purple{color:var(--purple)}.c-teal{color:var(--teal)}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:8px}
+.prog-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.prog-label{font-weight:500}.prog-val{font-family:var(--mono);color:var(--text2)}
+.prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s}
+.p-blue{background:var(--accent)}.p-green{background:var(--success)}.p-amber{background:var(--warning)}.p-danger{background:var(--danger)}.p-teal{background:var(--teal)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:600px;box-shadow:var(--shadow-lg);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.modal-hd{padding:20px 24px 0;display:flex;align-items:center;gap:10px}
+.modal-icon{width:30px;height:30px;background:var(--accent-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);font-family:var(--mono)}
+.modal-title{font-size:16px;font-weight:600}
+.modal-body{padding:18px 24px}
+.modal-ft{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+/* EMPTY */
+.empty{text-align:center;padding:56px 24px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.4;font-style:normal}
+.empty-text{font-size:13px;line-height:1.6}
+
+/* ALERT */
+.alert{padding:10px 14px;border-radius:var(--r-sm);font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px}
+.alert-info{background:var(--accent-light);border:1px solid #bfdbfe;color:#1e40af}
+.alert-warn{background:var(--warning-light);border:1px solid #fcd34d;color:#92400e}
+.alert-success{background:var(--success-light);border:1px solid #a7f3d0;color:#065f46}
+
+/* TOGGLE ROW */
+.toggle-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-lbl{flex:1;font-size:13px}.toggle-sub{font-size:11px;color:var(--text3);margin-top:1px}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+
+/* RANGE */
+.range-row{display:flex;flex-direction:column;gap:4px}
+.range-lbl-row{display:flex;justify-content:space-between;align-items:center}
+.range-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.range-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-light);padding:1px 7px;border-radius:4px}
+
+/* BATCH CARDS */
+.batch-list{display:flex;flex-direction:column;gap:12px}
+.batch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.batch-head{padding:11px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.batch-num{width:26px;height:26px;background:var(--accent);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.batch-meta{flex:1}
+.batch-id{font-size:13px;font-weight:600}
+.batch-sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:1px}
+.batch-time-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--success-light);border:1px solid #a7f3d0;border-radius:20px;font-size:12px;font-weight:600;color:var(--success);font-family:var(--mono)}
+.batch-body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.order-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border);font-size:12px}
+.order-prio{width:3px;height:28px;border-radius:2px;flex-shrink:0}
+.p1{background:var(--danger)}.p2{background:var(--warning)}.p3{background:var(--accent)}.p4{background:var(--text3)}
+.order-id{font-family:var(--mono);font-size:10px;color:var(--text3);width:52px;flex-shrink:0}
+.order-patient{font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order-drug{font-size:11px;color:var(--text2);font-family:var(--mono)}
+.order-flags{display:flex;gap:3px}
+
+/* RESIDUE SECTION */
+.residue-panel{background:var(--teal-light);border:1px solid #a5f3fc;border-radius:var(--r-sm);padding:12px 14px;margin-top:10px}
+.residue-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--teal);margin-bottom:8px}
+.residue-row{display:flex;align-items:center;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(8,145,178,.12)}
+.residue-row:last-child{border-bottom:none}
+.residue-drug{font-weight:600;flex:1}
+.residue-vol{font-family:var(--mono);font-size:11px;color:var(--teal)}
+.residue-bar{flex:1;height:4px;background:rgba(8,145,178,.15);border-radius:2px;overflow:hidden}
+.residue-bar-fill{height:100%;background:var(--teal);border-radius:2px}
+
+/* MACHINE PANEL */
+.machine-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-md);overflow:hidden}
+.machine-panel-hd{padding:13px 20px;background:#1e293b;display:flex;align-items:center;justify-content:space-between}
+.machine-panel-title{font-size:12px;font-weight:600;color:#e2e8f0;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px}
+.machine-panel-title::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 6px #22d3ee}
+.machine-layout{padding:18px;background:#f8fafc;border-bottom:1px solid var(--border)}
+.machine-grid{display:grid;grid-template-columns:150px 1fr 1fr 160px;grid-template-rows:auto auto;gap:10px}
+.mzone{background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:10px}
+.mzone-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.mzone-lbl::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.mz-multi .mzone-lbl::before{background:var(--accent)}
+.mz-flac .mzone-lbl::before{background:var(--warning)}
+.mz-syr .mzone-lbl::before{background:var(--purple)}
+.mz-cont .mzone-lbl::before{background:var(--success)}
+.mz-center{grid-column:2/4;background:#f1f5f9;border-style:dashed}
+.slot-grid{display:flex;flex-wrap:wrap;gap:3px}
+.slot{width:19px;height:19px;border-radius:3px;border:1.5px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;transition:all .2s;position:relative;cursor:default}
+.slot.s-new-flac{background:var(--warning);border-color:#b45309}
+.slot.s-res-flac{background:var(--teal);border-color:#0e7490}
+.slot.s-multi{background:var(--accent);border-color:var(--accent-dark)}
+.slot.s-syr-work{background:var(--purple);border-color:#5b21b6}
+.slot.s-syr-final{background:var(--success);border-color:#047857}
+.slot.s-cont{background:var(--success);border-color:#047857}
+.slot.s-empty{opacity:.3}
+.slot[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;font-family:var(--mono);padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:10;pointer-events:none}
+.slot-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:10px;color:var(--text2)}
+.slot-legend span{display:flex;align-items:center;gap:3px}
+.slot-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+
+/* TIME BARS */
+.time-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.time-row:last-child{border-bottom:none}
+.time-batch-id{font-family:var(--mono);font-size:11px;color:var(--text3);width:70px;flex-shrink:0}
+.time-bar-wrap{flex:1}.time-bar{height:7px;background:var(--accent);border-radius:4px;transition:width .5s;min-width:4px}
+.time-val{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);width:50px;text-align:right;flex-shrink:0}
+
+/* EST GRID */
+.est-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)}
+.est-item{padding:14px 18px;border-right:1px solid var(--border)}
+.est-item:last-child{border-right:none}
+.est-item-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)}
+.est-item-val{font-size:22px;font-weight:600;font-family:var(--mono);margin:2px 0}
+.est-item-sub{font-size:11px;color:var(--text3)}
+
+/* LOG */
+.opt-log{background:#1e293b;border-radius:var(--r-sm);padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:1.9;max-height:150px;overflow-y:auto;color:#94a3b8}
+.log-ok{color:#34d399}.log-warn{color:#fbbf24}.log-info{color:#60a5fa}.log-dim{color:#475569}.log-res{color:#22d3ee}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;padding:10px 16px;border-radius:var(--r-sm);font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-lg);animation:tIn .25s ease;transition:opacity .4s;max-width:400px}
+@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── TOUCH / IPAD GLOBAL ── */
+@media (pointer: coarse) {
+  /* Minimum 44px tap targets everywhere */
+  .btn { min-height: 44px; padding: 10px 18px; font-size: 15px; border-radius: 8px; }
+  .btn-sm { min-height: 40px; padding: 9px 14px; font-size: 14px; }
+  .btn-lg { min-height: 52px; padding: 14px 24px; font-size: 16px; }
+  .tab-btn { min-height: 48px; padding: 14px 18px; font-size: 14px; }
+  input, select, textarea { min-height: 44px; padding: 11px 14px; font-size: 16px !important; /* prevent iOS zoom */ border-radius: 8px; }
+  .filter-sel { min-height: 40px; padding: 9px 12px; font-size: 14px; }
+  label { font-size: 12px; margin-bottom: 2px; }
+  td, th { padding: 12px 14px; }
+  .badge { padding: 4px 10px; font-size: 12px; }
+  /* Larger slot targets in machine view */
+  .slot { width: 26px; height: 26px; font-size: 8px; }
+  /* Touch-friendly toggle */
+  input[type=checkbox] { width: 20px; height: 20px; }
+  input[type=range] { height: 32px; }
+  /* Remove hover effects that don't work on touch */
+  tr:hover td { background: inherit; }
+  .btn-outline:hover { background: var(--surface); color: var(--text2); }
+}
+
+/* ── IPAD PORTRAIT (768px) ── */
+@media (max-width: 900px) {
+  /* Header: compact, safe area */
+  header {
+    padding: 0 env(safe-area-inset-left, 16px);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    height: 60px;
+  }
+  .sys-badge { display: none; } /* hide on small screens */
+  .logo-ver { display: none; }
+
+  /* Nav: horizontal scroll, no wrap */
+  nav {
+    padding: 0;
+    padding-left: max(4px, env(safe-area-inset-left));
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    font-size: 14px;
+    border-bottom-width: 3px;
+  }
+
+  /* Main padding with safe area */
+  .main {
+    padding: 16px max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+
+  /* Layouts: all single column */
+  .four-col { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .two-col { grid-template-columns: 1fr; gap: 14px; }
+  .two-col-eq { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Page header: stack on small */
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .page-actions { width: 100%; flex-wrap: wrap; }
+  .page-actions .btn { flex: 1 1 auto; justify-content: center; min-width: 120px; }
+
+  /* Tables: horizontal scroll */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 640px; }
+
+  /* Batch body: single column */
+  .batch-body { grid-template-columns: 1fr; gap: 12px; }
+  .batch-head { flex-wrap: wrap; gap: 8px; }
+
+  /* Scheduler two-col → single */
+  .two-col > div:first-child { order: 2; } /* params below results on mobile */
+  .two-col > div:last-child  { order: 1; }
+
+  /* Machine grid: 2 col */
+  .machine-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; }
+  .mz-center { grid-column: 1 / 3; grid-row: 1; }
+  .mz-multi  { grid-column: 1; grid-row: 2; }
+  .mz-flac   { grid-column: 2; grid-row: 2; }
+  .mz-syr    { grid-column: 1; grid-row: 3; }
+  .mz-cont   { grid-column: 2; grid-row: 3; }
+
+  /* Modal: full screen on mobile */
+  .overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    max-height: 92vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-body { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .modal-ft   { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+
+  /* Form grid: 1 col */
+  .form-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Est grid */
+  .est-grid { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Stat cards: tighter */
+  .stat-val { font-size: 24px; }
+  .stat-card { padding: 14px; }
+
+  /* Order rows in batch: more compact */
+  .order-row { flex-wrap: wrap; gap: 6px; }
+  .order-patient { min-width: 100px; }
+
+  /* Toolbar: wrap nicely */
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .toolbar-left { width: 100%; }
+  .filter-sel { flex: 1; min-width: 120px; }
+}
+
+/* ── IPAD LANDSCAPE / LARGE TABLET ── */
+@media (min-width: 901px) and (max-width: 1199px) {
+  .main { padding: 20px 24px; }
+  .two-col { grid-template-columns: 280px 1fr; }
+  .four-col { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── SMALL PHONE ── */
+@media (max-width: 480px) {
+  .four-col { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .est-grid  { grid-template-columns: 1fr; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">CS</div>
+    <span class="logo-name">Compound<em>Scheduler</em></span>
+    <span class="logo-ver">v3 BETA</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="sys-badge">Sistema offline — modalità standalone</div>
+  </div>
+</header>
+
+<nav id="main-nav">
+  <button class="tab-btn active"  onclick="showTab('orders',this)">Ordini</button>
+  <button class="tab-btn" onclick="showTab('drugs',this)">Farmaci</button>
+  <button class="tab-btn" onclick="showTab('scheduler',this)">Schedulazione</button>
+  <button class="tab-btn" onclick="showTab('machine',this)">Carico Macchina</button>
+  <button class="tab-btn" onclick="showTab('residues',this)">Residui</button>
+  <button class="tab-btn" onclick="showTab('dashboard',this)">Dashboard</button>
+</nav>
+
+<div class="main">
+
+<!-- ═══ ORDINI ═══ -->
+<section id="tab-orders" class="section active">
+  <div class="page-header">
+    <div class="page-title">Lista <span>Ordini</span></div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadDemoOrders()">Carica Demo</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('csv-input').click()">Importa CSV</button>
+      <input type="file" id="csv-input" accept=".csv" style="display:none" onchange="importCSV(event)">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">Esporta CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="clearOrders()">Svuota Lista</button>
+      <button class="btn btn-primary btn-sm" onclick="openOrderModal()">+ Nuovo Ordine</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <select class="filter-sel" id="f-rep" onchange="renderOrders()">
+        <option value="">Tutti i Reparti</option>
+        <option>Reparto 1</option><option>Reparto 2</option><option>Reparto 3</option><option>Reparto 4</option>
+      </select>
+      <select class="filter-sel" id="f-prio" onchange="renderOrders()">
+        <option value="">Tutte le Priorita</option>
+        <option value="1">P1 Urgente</option><option value="2">P2 Alta</option>
+        <option value="3">P3 Normale</option><option value="4">P4 Anticipo</option>
+      </select>
+      <select class="filter-sel" id="f-drug" onchange="renderOrders()">
+        <option value="">Tutti i Farmaci</option>
+      </select>
+    </div>
+    <div id="orders-count" style="font-size:12px;color:var(--text3);font-family:var(--mono)"></div>
+  </div>
+  <div class="table-wrap">
+    <table id="orders-table">
+      <thead><tr>
+        <th>ID</th><th>Paziente</th><th>Reparto</th><th>Farmaco</th>
+        <th>Dose</th><th>Vol.</th><th>Contenitore</th><th>Priorita</th><th>Info</th><th></th>
+      </tr></thead>
+      <tbody id="orders-tbody"></tbody>
+    </table>
+    <div id="orders-empty" class="empty" style="display:none">
+      <div class="empty-icon">[ ]</div>
+      <div class="empty-text">Nessun ordine. Usa "Carica Demo" o importa un CSV.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FARMACI ═══ -->
+<section id="tab-drugs" class="section">
+  <div class="page-header">
+    <div class="page-title">Anagrafica <span>Farmaci</span></div>
+    <button class="btn btn-primary btn-sm" onclick="openDrugModal()">+ Nuovo Farmaco</button>
+  </div>
+  <div class="alert alert-info">
+    Il tipo sorgente determina l'occupazione degli slot macchina. Il volume sorgente per flacone/sacca e il numero di unita per contenitore sono usati per calcolare i residui.
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Codice</th><th>Nome</th><th>Sorgente</th><th>Vol. Sorgente (ml)</th>
+        <th>Conc. (mg/ml)</th><th>Unita</th><th>Tempo/prep.</th><th>Note</th><th></th>
+      </tr></thead>
+      <tbody id="drugs-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ SCHEDULAZIONE ═══ -->
+<section id="tab-scheduler" class="section">
+  <div class="page-header">
+    <div class="page-title">Motore di <span>Schedulazione</span></div>
+  </div>
+  <div class="two-col">
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Residui iniziali -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-dot" style="background:var(--teal)"></div>Residui Aperti (giornata precedente)</div>
+          <button class="btn btn-outline btn-sm" onclick="openResidueInputModal()">+ Aggiungi</button>
+        </div>
+        <div class="card-body" style="padding:12px 16px">
+          <div id="residue-input-list">
+            <div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Nessun residuo. I farmaci aperti dalla sessione precedente vengono inseriti qui.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stima pre-scheduling -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-dot" style="background:var(--warning)"></div>Stima Pre-Scheduling</div>
+          <button class="btn btn-outline btn-sm" onclick="computeEstimate()">Calcola</button>
+        </div>
+        <div class="card-body" style="padding:14px"><div id="pre-estimate">
+          <div class="empty" style="padding:20px 0"><div class="empty-text">Premi "Calcola" per stimare batch e tempi.</div></div>
+        </div></div>
+      </div>
+
+      <!-- Parametri -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot"></div>Parametri Ottimizzazione</div></div>
+        <div class="card-body" style="padding:14px;display:flex;flex-direction:column;gap:12px">
+          <div class="form-group">
+            <label>Strategia</label>
+            <select id="opt-strategy">
+              <option value="residue-first">Minimizza Residui (prioritario)</option>
+              <option value="group-first">Massimizza Raggruppamento</option>
+              <option value="priority-first">Priorita Clinica Prima</option>
+              <option value="balanced">Bilanciato</option>
+            </select>
+          </div>
+          <div class="range-row">
+            <div class="range-lbl-row"><span class="range-lbl">Peso Priorita</span><span class="range-val" id="pw-val">6</span></div>
+            <input type="range" id="opt-prio-w" min="0" max="10" value="6" oninput="document.getElementById('pw-val').textContent=this.value">
+          </div>
+          <div class="range-row">
+            <div class="range-lbl-row"><span class="range-lbl">Peso Raggruppamento</span><span class="range-val" id="gw-val">8</span></div>
+            <input type="range" id="opt-group-w" min="0" max="10" value="8" oninput="document.getElementById('gw-val').textContent=this.value">
+          </div>
+          <div class="range-row">
+            <div class="range-lbl-row"><span class="range-lbl">Peso Anti-Residuo</span><span class="range-val" id="rw-val">9</span></div>
+            <input type="range" id="opt-residue-w" min="0" max="10" value="9" oninput="document.getElementById('rw-val').textContent=this.value">
+          </div>
+          <div class="divider" style="margin:2px 0"></div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Anticipi in fondo</div><div class="toggle-sub">P4 posizionate negli ultimi batch</div></div>
+            <input type="checkbox" id="opt-anticipo" checked>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Preferisci svuotare sorgenti aperte</div><div class="toggle-sub">I residui attivi hanno priorita di slot rispetto ai nuovi</div></div>
+            <input type="checkbox" id="opt-drain-res" checked>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vincoli -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--text3)"></div>Vincoli Macchina</div></div>
+        <div class="card-body" style="padding:12px 16px">
+          <table style="font-size:12px">
+            <tr><td style="padding:3px 0;color:var(--text2)">Contenitori finali con multiprelievo</td><td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--accent)">8</td></tr>
+            <tr><td style="padding:3px 0;color:var(--text2)">Contenitori finali senza multiprelievo</td><td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--accent)">12</td></tr>
+            <tr><td style="padding:3px 0;color:var(--text2)">Slot sacche multiprelievo</td><td style="text-align:right;font-family:var(--mono);font-weight:600">4</td></tr>
+            <tr><td style="padding:3px 0;color:var(--text2)">Slot flaconi nuovi</td><td style="text-align:right;font-family:var(--mono);font-weight:600">12</td></tr>
+            <tr><td style="padding:3px 0;color:var(--text2)">Slot flaconi residui (aperti)</td><td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--teal)">6</td></tr>
+            <tr><td style="padding:3px 0;color:var(--text2)">Slot siringhe totali</td><td style="text-align:right;font-family:var(--mono);font-weight:600">20</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sticky run button on touch devices -->
+      <button class="btn btn-success btn-lg btn-full desktop-run-btn" onclick="runScheduler()">Esegui Schedulazione</button>
+    </div>
+
+    <div>
+      <div id="opt-log-wrap" style="display:none;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:6px">Log Ottimizzazione</div>
+        <div class="opt-log" id="opt-log"></div>
+      </div>
+      <div id="scheduler-empty" class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r)">
+        <div class="empty-icon">[ ]</div>
+        <div class="empty-text">Premi "Esegui Schedulazione" per calcolare i batch ottimali.</div>
+      </div>
+      <div id="batch-results" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">Batch Generati</div>
+          <div id="batch-summary" style="font-size:12px;color:var(--text2);font-family:var(--mono)"></div>
+        </div>
+        <div class="batch-list" id="batch-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CARICO MACCHINA ═══ -->
+<section id="tab-machine" class="section">
+  <div class="page-header">
+    <div class="page-title">Carico <span>Macchina</span></div>
+    <div class="page-actions">
+      <select id="machine-batch-sel" class="filter-sel" onchange="renderMachineView()">
+        <option value="">Seleziona Batch</option>
+      </select>
+    </div>
+  </div>
+  <div id="machine-no-batches" class="alert alert-warn">Nessun batch schedulato. Eseguire prima la schedulazione.</div>
+  <div id="machine-content" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <div class="card-title"><div class="card-dot" style="background:var(--success)"></div>Stima Tempi Produzione Totale</div>
+        <div id="total-time-chip" style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--success)"></div>
+      </div>
+      <div class="est-grid" id="global-est-grid"></div>
+      <div style="padding:14px 20px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px">Durata per Batch</div>
+        <div id="batch-time-bars"></div>
+      </div>
+    </div>
+
+    <div class="machine-panel">
+      <div class="machine-panel-hd">
+        <div class="machine-panel-title">Layout Carico Macchina</div>
+        <div id="machine-batch-lbl" style="font-size:12px;color:#94a3b8;font-family:var(--mono)">Seleziona un batch</div>
+      </div>
+      <div class="machine-layout">
+        <div class="machine-grid">
+          <div class="mzone mz-multi" style="grid-row:1">
+            <div class="mzone-lbl">Sacche Multi-prelievo <span style="margin-left:auto;font-family:var(--mono);font-size:10px" id="zm-count">0/4</span></div>
+            <div class="slot-grid" id="zm-slots"></div>
+          </div>
+          <div class="mzone mz-center" style="grid-row:1;grid-column:2/4">
+            <div class="mzone-lbl" style="justify-content:center;color:var(--text2)">Area Robotica — Dispensazione</div>
+            <div style="display:flex;justify-content:center;align-items:center;padding:20px;gap:16px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px" id="machine-status-vis">
+                <div style="display:flex;gap:10px">
+                  <div style="width:7px;height:52px;background:linear-gradient(to bottom,#64748b,#94a3b8);border-radius:3px;position:relative">
+                    <div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:18px;height:10px;background:#475569;border-radius:2px"></div>
+                  </div>
+                  <div style="width:7px;height:62px;background:linear-gradient(to bottom,#64748b,#94a3b8);border-radius:3px;position:relative">
+                    <div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:18px;height:10px;background:#475569;border-radius:2px"></div>
+                  </div>
+                  <div style="width:7px;height:52px;background:linear-gradient(to bottom,#64748b,#94a3b8);border-radius:3px;position:relative">
+                    <div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:18px;height:10px;background:#475569;border-radius:2px"></div>
+                  </div>
+                </div>
+                <div id="machine-status-text" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:6px">In attesa</div>
+              </div>
+            </div>
+          </div>
+          <div class="mzone mz-flac" style="grid-row:1">
+            <div class="mzone-lbl">Flaconi Sorgente <span style="margin-left:auto;font-family:var(--mono);font-size:10px" id="zf-count">0/18</span></div>
+            <div class="slot-grid" id="zf-slots"></div>
+            <div class="slot-legend">
+              <span><i style="background:var(--warning)"></i>Nuovo</span>
+              <span><i style="background:var(--teal)"></i>Residuo</span>
+            </div>
+          </div>
+          <div class="mzone mz-syr" style="grid-row:2;grid-column:1/3">
+            <div class="mzone-lbl">Siringhe — Allestimento + Boli <span style="margin-left:auto;font-family:var(--mono);font-size:10px" id="zs-count">0/20</span></div>
+            <div class="slot-grid" id="zs-slots"></div>
+            <div class="slot-legend">
+              <span><i style="background:var(--purple)"></i>Allestimento</span>
+              <span><i style="background:var(--success)"></i>Bolo finale</span>
+            </div>
+          </div>
+          <div class="mzone mz-cont" style="grid-row:2;grid-column:3/5">
+            <div class="mzone-lbl">Contenitori Finali <span style="margin-left:auto;font-family:var(--mono);font-size:10px" id="zc-count">0/12</span></div>
+            <div class="slot-grid" id="zc-slots"></div>
+            <div id="zc-note" style="font-size:10px;color:var(--success);margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 20px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:10px">Dettaglio Ordini nel Batch</div>
+        <div id="machine-order-detail"></div>
+        <div style="margin-top:16px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px">Stima Tempo Batch Selezionato</div>
+          <div id="machine-time-detail" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:12px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RESIDUI ═══ -->
+<section id="tab-residues" class="section">
+  <div class="page-header">
+    <div class="page-title">Gestione <span>Residui</span></div>
+    <button class="btn btn-outline btn-sm" onclick="refreshResidueView()">Aggiorna</button>
+  </div>
+  <div class="alert alert-info">
+    I residui vengono calcolati automaticamente dopo la schedulazione in base ai volumi delle sorgenti e al consumo totale per farmaco. Un residuo "portato avanti" viene caricato in slot dedicati (max 6 flaconi) nel batch successivo, evitando scarico e ricarico.
+  </div>
+  <div id="residue-view">
+    <div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r)">
+      <div class="empty-icon">[ ]</div>
+      <div class="empty-text">Eseguire la schedulazione per visualizzare l'analisi dei residui.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DASHBOARD ═══ -->
+<section id="tab-dashboard" class="section">
+  <div class="page-header">
+    <div class="page-title"><span>Dashboard</span></div>
+    <button class="btn btn-outline btn-sm" onclick="refreshDashboard()">Aggiorna</button>
+  </div>
+  <div class="four-col">
+    <div class="stat-card"><div class="stat-val c-blue" id="st-orders">0</div><div class="stat-label">Ordini Totali</div><div class="stat-sub" id="st-orders-sub">—</div></div>
+    <div class="stat-card"><div class="stat-val c-green" id="st-batches">—</div><div class="stat-label">Batch Schedulati</div><div class="stat-sub" id="st-batches-sub">—</div></div>
+    <div class="stat-card"><div class="stat-val c-amber" id="st-drugs">0</div><div class="stat-label">Farmaci Distinti</div><div class="stat-sub" id="st-drugs-sub">—</div></div>
+    <div class="stat-card"><div class="stat-val c-teal" id="st-residue">—</div><div class="stat-label">Residuo Totale Stimato</div><div class="stat-sub">ml a fine giornata</div></div>
+  </div>
+  <div class="two-col-eq" style="margin-bottom:14px">
+    <div class="card"><div class="card-header"><div class="card-title"><div class="card-dot"></div>Ordini per Reparto</div></div><div class="card-body" id="chart-rep"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--warning)"></div>Ordini per Priorita</div></div><div class="card-body" id="chart-prio"></div></div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--purple)"></div>Farmaci piu Frequenti</div></div><div class="card-body" id="chart-drugs"></div></div>
+</section>
+
+</div><!-- /main -->
+
+<!-- MODAL ORDINE -->
+<div class="overlay" id="modal-order">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-icon">OR</div><div class="modal-title">Nuovo Ordine</div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>ID Ordine</label><input type="text" id="o-id" readonly style="opacity:.6;cursor:default"></div>
+        <div class="form-group"><label>Paziente</label><input type="text" id="o-patient" placeholder="Cognome Nome"></div>
+        <div class="form-group"><label>Reparto</label><select id="o-reparto"><option>Reparto 1</option><option>Reparto 2</option><option>Reparto 3</option><option>Reparto 4</option></select></div>
+        <div class="form-group"><label>Farmaco</label><select id="o-drug"><option value="">Seleziona</option></select></div>
+        <div class="form-group"><label>Dose</label><input type="number" id="o-dose" placeholder="500" min="0"></div>
+        <div class="form-group"><label>Concentrazione (mg/ml)</label><input type="number" id="o-conc" placeholder="5" step="0.1" min="0"></div>
+        <div class="form-group"><label>Volume Finale (ml)</label><input type="number" id="o-volume" placeholder="250" min="0"></div>
+        <div class="form-group"><label>Contenitore</label><select id="o-container"><option value="sacca-fisio">Sacca Fisiologica</option><option value="sacca-gluco">Sacca Glucosata</option><option value="siringa">Siringa (Bolo)</option></select></div>
+        <div class="form-group"><label>Durata Infusione (h)</label><input type="number" id="o-infusion" placeholder="4" min="0" step="0.5"></div>
+        <div class="form-group"><label>Priorita</label><select id="o-priority"><option value="1">1 Urgente</option><option value="2">2 Alta</option><option value="3" selected>3 Normale</option><option value="4">4 Anticipo D+1</option></select></div>
+        <div class="form-group"><label>Compensazione</label><select id="o-comp"><option value="0">No</option><option value="1">Si</option></select></div>
+        <div class="form-group"><label>Note</label><input type="text" id="o-notes" placeholder="Opzionale"></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-order')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOrder()">Salva Ordine</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FARMACO -->
+<div class="overlay" id="modal-drug">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-icon">FA</div><div class="modal-title">Nuovo Farmaco</div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Codice</label><input type="text" id="d-code" placeholder="VAN01"></div>
+        <div class="form-group"><label>Nome</label><input type="text" id="d-name" placeholder="Vancomicina"></div>
+        <div class="form-group"><label>Tipo Sorgente</label><select id="d-source"><option value="flacone">Flacone</option><option value="multiprelievo">Sacca Multiprelievo</option></select></div>
+        <div class="form-group"><label>Volume Sorgente (ml)</label><input type="number" id="d-vol" placeholder="100" min="1" title="Volume per flacone o sacca multiprelievo"></div>
+        <div class="form-group"><label>Conc. Tipica (mg/ml)</label><input type="number" id="d-conc" placeholder="10" step="0.1"></div>
+        <div class="form-group"><label>Unita</label><select id="d-unit"><option>mg</option><option>g</option><option>UI</option><option>mmol</option><option>mEq</option></select></div>
+        <div class="form-group"><label>Note</label><input type="text" id="d-notes" placeholder="Opzionale"></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-drug')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveDrug()">Salva Farmaco</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESIDUO INPUT -->
+<div class="overlay" id="modal-residue-input">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hd"><div class="modal-icon">RS</div><div class="modal-title">Aggiungi Residuo Aperto</div></div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group"><label>Farmaco</label><select id="ri-drug"><option value="">Seleziona</option></select></div>
+        <div class="form-group"><label>Volume Residuo (ml)</label><input type="number" id="ri-vol" placeholder="60" min="0.1" step="0.1"></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-residue-input')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveResidueInput()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let orders = [], drugs = [], batches = [];
+let orderCounter = 1;
+// residuesInput: farmaci aperti dalla sessione precedente { drugCode, volMl }
+let residuesInput = [];
+// residuesOutput: calcolati dopo scheduling { drugCode, volMl, batchId }
+let residuesOutput = [];
+
+// ════════════════════════════════════════
+// MACHINE CONSTANTS
+// ════════════════════════════════════════
+const MACHINE = {
+  maxFinal_withMulti: 8,
+  maxFinal_noMulti:   12,
+  maxMulti:           4,
+  maxFlaconiNew:      12,
+  maxFlaconiRes:      6,   // slot flaconi residui
+  maxFlaconiTot:      18,  // 12 + 6
+  maxSiringhe:        20,
+};
+
+// ════════════════════════════════════════
+// TIMING (seconds)
+// ════════════════════════════════════════
+const TIME = {
+  sacca_sacca:   75,
+  flacone_sacca: 110,
+  bolo:          30,
+  setup:         120,
+};
+
+function orderTime(o) {
+  const d = drugs.find(x => x.code === o.drugCode);
+  if (o.container === 'siringa') return TIME.bolo;
+  if (!d) return TIME.flacone_sacca;
+  return d.source === 'multiprelievo' ? TIME.sacca_sacca : TIME.flacone_sacca;
+}
+
+function formatTime(sec) {
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec/60), s = sec%60;
+  if (m < 60) return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  const h = Math.floor(m/60), rm = m%60;
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+}
+
+// ════════════════════════════════════════
+// RESIDUE COMPUTATION
+// ════════════════════════════════════════
+// Given a batch, compute volume consumed per drug and
+// how many new containers are opened, returning residue per drug
+function computeBatchResidues(batchOrders, prevResidues) {
+  // prevResidues: { drugCode -> volMl remaining }
+  const result = {}; // drugCode -> { volConsumed, flacsOpened, residue, usedFromPrev }
+
+  const drugCodes = [...new Set(batchOrders.map(o => o.drugCode))];
+  for (const code of drugCodes) {
+    const drug = drugs.find(d => d.code === code);
+    if (!drug) continue;
+    if (drug.source === 'multiprelievo') continue; // sacche multi: no residue logic for now
+
+    // Volume consumed by this drug in this batch (sum of drug volume needed per order)
+    // drug volume needed = dose / conc (ml of drug solution to aspirate)
+    const volConsumed = batchOrders
+      .filter(o => o.drugCode === code)
+      .reduce((s, o) => {
+        const ml = drug.conc > 0 ? o.dose / drug.conc : 0;
+        return s + ml;
+      }, 0);
+
+    const srcVol = drug.sourceVol || 100; // ml per flacone
+    let prevVol = prevResidues[code] || 0;
+    let toConsume = volConsumed;
+    let flacsOpened = 0;
+    let usedFromPrev = 0;
+
+    // Use residue first
+    if (prevVol > 0) {
+      const fromPrev = Math.min(prevVol, toConsume);
+      usedFromPrev = fromPrev;
+      toConsume -= fromPrev;
+      prevVol -= fromPrev;
+    }
+
+    // Open new flaconi as needed
+    while (toConsume > 0.001) {
+      flacsOpened++;
+      const taken = Math.min(srcVol, toConsume);
+      toConsume -= taken;
+    }
+
+    // Residue in last opened flacone
+    let residueInLastFlac = 0;
+    if (flacsOpened > 0) {
+      const totalNewVol = flacsOpened * srcVol;
+      const usedFromNew = volConsumed - usedFromPrev;
+      residueInLastFlac = totalNewVol - usedFromNew;
+    } else {
+      // Only used from prev, residue is remaining prev
+      residueInLastFlac = prevVol; // what's left from prev after use
+    }
+
+    result[code] = {
+      volConsumed: Math.round(volConsumed * 10) / 10,
+      flacsOpened,
+      usedFromPrev: Math.round(usedFromPrev * 10) / 10,
+      residue: Math.max(0, Math.round(residueInLastFlac * 10) / 10),
+      srcVol,
+    };
+  }
+  return result;
+}
+
+// ════════════════════════════════════════
+// BATCH RESOURCE COMPUTATION
+// ════════════════════════════════════════
+function computeBatchResources(batchOrders, prevResidues = {}) {
+  const drugCodes   = [...new Set(batchOrders.map(o => o.drugCode))];
+  const multiDrugs  = drugCodes.filter(c => drugs.find(d => d.code===c)?.source==='multiprelievo');
+  const flaconDrugs = drugCodes.filter(c => drugs.find(d => d.code===c)?.source==='flacone');
+  const hasMulti    = multiDrugs.length > 0;
+  const maxFinal    = hasMulti ? MACHINE.maxFinal_withMulti : MACHINE.maxFinal_noMulti;
+
+  const sacche         = batchOrders.filter(o => o.container !== 'siringa').length;
+  const siringheFinali = batchOrders.filter(o => o.container === 'siringa').length;
+  const siringheAllest = drugCodes.length;
+  const siringeTotali  = siringheAllest + siringheFinali;
+  const hasComp        = batchOrders.some(o => o.compensation);
+
+  // Flacon slot usage: split new vs residue
+  const flaconNew = flaconDrugs.filter(c => !prevResidues[c] || prevResidues[c] <= 0);
+  const flaconRes = flaconDrugs.filter(c =>  prevResidues[c] >  0);
+
+  // Count total flaconi slots needed (new + how many extra for each drug beyond 1 due to volume)
+  // Simplified: 1 slot per distinct flacon drug
+  const slotsNew = flaconNew.length;
+  const slotsRes = flaconRes.length;
+  const slotsFlaconTot = slotsNew + slotsRes;
+
+  return {
+    hasMulti, maxFinal, sacche, siringheFinali, siringheAllest, siringeTotali,
+    multiDrugs, flaconDrugs, flaconNew, flaconRes, drugCodes, hasComp,
+    slotsNew, slotsRes, slotsFlaconTot,
+    violations: {
+      finalOver:  (sacche + siringheFinali) > maxFinal,
+      multiOver:  multiDrugs.length > MACHINE.maxMulti,
+      flaconOver: slotsFlaconTot > MACHINE.maxFlaconiTot ||
+                  slotsNew > MACHINE.maxFlaconiNew ||
+                  slotsRes > MACHINE.maxFlaconiRes,
+      syrOver:    siringeTotali > MACHINE.maxSiringhe,
+    }
+  };
+}
+
+function batchIsValid(bo, prevResidues = {}) {
+  const r = computeBatchResources(bo, prevResidues);
+  return !r.violations.finalOver && !r.violations.multiOver &&
+         !r.violations.flaconOver && !r.violations.syrOver;
+}
+
+// ════════════════════════════════════════
+// DEMO DATA
+// ════════════════════════════════════════
+const DEMO_DRUGS = [
+  { code:'CIS', name:'Cisplatino',        source:'flacone',       conc:1,    unit:'mg',  sourceVol:100, notes:'1mg/ml - fl.100ml' },
+  { code:'GEM', name:'Gemcitabina',       source:'multiprelievo', conc:10,   unit:'mg',  sourceVol:200, notes:'Sacca 200ml' },
+  { code:'FUO', name:'5-Fluorouracile',   source:'multiprelievo', conc:50,   unit:'mg',  sourceVol:500, notes:'Sacca 500ml' },
+  { code:'KCL', name:'Cloruro Potassio',  source:'flacone',       conc:2,    unit:'mEq', sourceVol:50,  notes:'2mEq/ml - fl.50ml' },
+  { code:'OXA', name:'Oxaliplatino',      source:'flacone',       conc:0.5,  unit:'mg',  sourceVol:100, notes:'0.5mg/ml - fl.100ml' },
+  { code:'DOC', name:'Docetaxel',         source:'flacone',       conc:0.74, unit:'mg',  sourceVol:108, notes:'0.74mg/ml - fl.108ml' },
+  { code:'PAC', name:'Paclitaxel',        source:'multiprelievo', conc:1.2,  unit:'mg',  sourceVol:300, notes:'Sacca 300ml' },
+  { code:'IRI', name:'Irinotecan',        source:'flacone',       conc:20,   unit:'mg',  sourceVol:5,   notes:'20mg/ml - fl.5ml' },
+];
+
+function loadDemoOrders() {
+  if (!drugs.length) { DEMO_DRUGS.forEach(d => drugs.push({...d})); renderDrugs(); }
+  const demo = [
+    {patient:'Rossi Mario',     reparto:'Reparto 1',drugCode:'GEM',dose:1200,conc:10,volume:250,container:'sacca-fisio',infusion:0.5,priority:1,compensation:false,notes:''},
+    {patient:'Bianchi Anna',    reparto:'Reparto 1',drugCode:'GEM',dose:1000,conc:10,volume:250,container:'sacca-fisio',infusion:0.5,priority:1,compensation:false,notes:''},
+    {patient:'Verdi Luigi',     reparto:'Reparto 2',drugCode:'GEM',dose:1400,conc:10,volume:250,container:'sacca-fisio',infusion:0.5,priority:2,compensation:false,notes:''},
+    {patient:'Ferrari Giulia',  reparto:'Reparto 4',drugCode:'GEM',dose:800, conc:10,volume:100,container:'sacca-fisio',infusion:0.5,priority:2,compensation:true, notes:'Comp 10ml'},
+    {patient:'Conti Paolo',     reparto:'Reparto 4',drugCode:'GEM',dose:1600,conc:10,volume:500,container:'sacca-fisio',infusion:0.5,priority:2,compensation:false,notes:''},
+    {patient:'Ricci Sara',      reparto:'Reparto 2',drugCode:'GEM',dose:900, conc:10,volume:100,container:'sacca-fisio',infusion:0.5,priority:3,compensation:false,notes:''},
+    {patient:'Marino Luca',     reparto:'Reparto 3',drugCode:'GEM',dose:1100,conc:10,volume:250,container:'sacca-fisio',infusion:0.5,priority:3,compensation:false,notes:''},
+    {patient:'Greco Elena',     reparto:'Reparto 1',drugCode:'GEM',dose:1300,conc:10,volume:250,container:'sacca-fisio',infusion:0.5,priority:4,compensation:false,notes:'Anticipo D+1'},
+    {patient:'Lombardi Piero',  reparto:'Reparto 4',drugCode:'FUO',dose:800, conc:50,volume:500,container:'sacca-fisio',infusion:24, priority:1,compensation:false,notes:'Infusione continua'},
+    {patient:'Esposito Maria',  reparto:'Reparto 4',drugCode:'FUO',dose:1000,conc:50,volume:500,container:'sacca-fisio',infusion:24, priority:1,compensation:false,notes:'Infusione continua'},
+    {patient:'Romano Fabio',    reparto:'Reparto 4',drugCode:'FUO',dose:600, conc:50,volume:250,container:'sacca-fisio',infusion:12, priority:2,compensation:true, notes:'Comp 15ml'},
+    {patient:'Bruno Chiara',    reparto:'Reparto 3',drugCode:'FUO',dose:1200,conc:50,volume:500,container:'sacca-fisio',infusion:24, priority:2,compensation:false,notes:''},
+    {patient:'Gallo Antonio',   reparto:'Reparto 2',drugCode:'FUO',dose:500, conc:50,volume:100,container:'sacca-fisio',infusion:6,  priority:3,compensation:false,notes:''},
+    {patient:'Cattaneo Irene',  reparto:'Reparto 4',drugCode:'FUO',dose:900, conc:50,volume:250,container:'sacca-fisio',infusion:12, priority:4,compensation:false,notes:'Anticipo D+1'},
+    {patient:'Marini Davide',   reparto:'Reparto 4',drugCode:'FUO',dose:700, conc:50,volume:250,container:'sacca-fisio',infusion:12, priority:4,compensation:false,notes:'Anticipo D+1'},
+    {patient:'Testa Roberta',   reparto:'Reparto 1',drugCode:'CIS',dose:80,  conc:1, volume:500,container:'sacca-fisio',infusion:6,  priority:1,compensation:true, notes:'Chemo Comp 50ml'},
+    {patient:'Palmieri Nico',   reparto:'Reparto 4',drugCode:'CIS',dose:60,  conc:1, volume:500,container:'sacca-fisio',infusion:6,  priority:1,compensation:true, notes:'Chemo Comp 50ml'},
+    {patient:'Serra Valeria',   reparto:'Reparto 4',drugCode:'CIS',dose:100, conc:1, volume:500,container:'sacca-fisio',infusion:6,  priority:2,compensation:true, notes:'Comp 50ml'},
+    {patient:'Fiore Claudia',   reparto:'Reparto 4',drugCode:'CIS',dose:75,  conc:1, volume:500,container:'sacca-fisio',infusion:6,  priority:2,compensation:true, notes:'Comp 50ml'},
+    {patient:'Neri Francesco',  reparto:'Reparto 4',drugCode:'CIS',dose:50,  conc:1, volume:250,container:'sacca-fisio',infusion:4,  priority:3,compensation:false,notes:''},
+    {patient:'De Luca Giorgia', reparto:'Reparto 4',drugCode:'CIS',dose:90,  conc:1, volume:500,container:'sacca-fisio',infusion:6,  priority:3,compensation:true, notes:'Comp 50ml'},
+    {patient:'Caruso Stefano',  reparto:'Reparto 2',drugCode:'KCL',dose:20,  conc:2, volume:100,container:'sacca-fisio',infusion:2,  priority:1,compensation:true, notes:'Urgente Comp 10ml'},
+    {patient:'Vitale Enrico',   reparto:'Reparto 1',drugCode:'KCL',dose:40,  conc:2, volume:250,container:'sacca-fisio',infusion:3,  priority:2,compensation:true, notes:'Comp 25ml'},
+    {patient:'Mancini Lucia',   reparto:'Reparto 3',drugCode:'KCL',dose:30,  conc:2, volume:250,container:'sacca-fisio',infusion:2,  priority:2,compensation:true, notes:'Comp 25ml'},
+    {patient:'Fabbri Giorgio',  reparto:'Reparto 2',drugCode:'KCL',dose:20,  conc:2, volume:100,container:'sacca-fisio',infusion:2,  priority:3,compensation:false,notes:''},
+    {patient:'Greco Paolo',     reparto:'Reparto 1',drugCode:'KCL',dose:40,  conc:2, volume:250,container:'sacca-fisio',infusion:3,  priority:3,compensation:true, notes:'Comp 25ml'},
+    {patient:'Monti Silvia',    reparto:'Reparto 3',drugCode:'KCL',dose:20,  conc:2, volume:100,container:'sacca-fisio',infusion:2,  priority:3,compensation:false,notes:''},
+    {patient:'Fontana Davide',  reparto:'Reparto 2',drugCode:'OXA',dose:85,  conc:0.5,volume:500,container:'sacca-fisio',infusion:2, priority:1,compensation:true, notes:'Chemo Comp 50ml'},
+    {patient:'Martini Elena',   reparto:'Reparto 4',drugCode:'OXA',dose:100, conc:0.5,volume:500,container:'sacca-fisio',infusion:2, priority:2,compensation:true, notes:'Comp 50ml'},
+    {patient:'Russo Antonio',   reparto:'Reparto 4',drugCode:'OXA',dose:70,  conc:0.5,volume:500,container:'sacca-fisio',infusion:2, priority:2,compensation:true, notes:'Comp 50ml'},
+    {patient:'Ferri Laura',     reparto:'Reparto 4',drugCode:'OXA',dose:130, conc:0.5,volume:500,container:'sacca-fisio',infusion:2, priority:3,compensation:true, notes:'Comp 50ml'},
+    {patient:'Costa Marco',     reparto:'Reparto 2',drugCode:'DOC',dose:75,  conc:0.74,volume:500,container:'sacca-fisio',infusion:1,priority:1,compensation:true, notes:'Chemo Comp 75ml'},
+    {patient:'Villa Paola',     reparto:'Reparto 4',drugCode:'DOC',dose:100, conc:0.74,volume:500,container:'sacca-fisio',infusion:1,priority:2,compensation:true, notes:'Comp 100ml'},
+    {patient:'Gatti Luca',      reparto:'Reparto 4',drugCode:'DOC',dose:60,  conc:0.74,volume:500,container:'sacca-fisio',infusion:1,priority:2,compensation:true, notes:'Comp 60ml'},
+    {patient:'Colombo Sara',    reparto:'Reparto 4',drugCode:'DOC',dose:80,  conc:0.74,volume:500,container:'sacca-fisio',infusion:1,priority:3,compensation:true, notes:'Comp 80ml'},
+    {patient:'Rizzo Franco',    reparto:'Reparto 1',drugCode:'PAC',dose:175, conc:1.2,volume:500,container:'sacca-fisio',infusion:3, priority:1,compensation:true, notes:'Chemo Comp 87ml'},
+    {patient:'Leone Maria',     reparto:'Reparto 4',drugCode:'PAC',dose:200, conc:1.2,volume:500,container:'sacca-fisio',infusion:3, priority:2,compensation:true, notes:'Comp 100ml'},
+    {patient:'Serra Giulio',    reparto:'Reparto 4',drugCode:'PAC',dose:135, conc:1.2,volume:250,container:'sacca-fisio',infusion:3, priority:3,compensation:true, notes:'Comp 67ml'},
+    {patient:'Poli Cristina',   reparto:'Reparto 3',drugCode:'GEM',dose:950, conc:10,volume:100,container:'sacca-fisio',infusion:0.5,priority:2,compensation:false,notes:''},
+    {patient:'Amato Roberto',   reparto:'Reparto 2',drugCode:'KCL',dose:30,  conc:2, volume:250,container:'sacca-fisio',infusion:2,  priority:4,compensation:true, notes:'Anticipo D+1'},
+  ];
+  orders = []; orderCounter = 1;
+  demo.forEach(o => { orders.push({...o, id:`ORD-${String(orderCounter++).padStart(3,'0')}`}); });
+  renderOrders(); updateDrugFilter(); refreshDashboard();
+  showToast('success', `${orders.length} ordini demo caricati.`);
+}
+
+// ════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'dashboard') refreshDashboard();
+  if (name === 'machine')   refreshMachineBatchSelect();
+  if (name === 'residues')  refreshResidueView();
+}
+
+// ════════════════════════════════════════
+// MODALS
+// ════════════════════════════════════════
+function openOrderModal() {
+  document.getElementById('o-id').value = `ORD-${String(orderCounter).padStart(3,'0')}`;
+  const sel = document.getElementById('o-drug');
+  sel.innerHTML = '<option value="">Seleziona</option>';
+  drugs.forEach(d => sel.innerHTML += `<option value="${d.code}">${d.name}</option>`);
+  document.getElementById('modal-order').classList.add('open');
+}
+function openDrugModal()  { document.getElementById('modal-drug').classList.add('open'); }
+function openResidueInputModal() {
+  const sel = document.getElementById('ri-drug');
+  sel.innerHTML = '<option value="">Seleziona</option>';
+  drugs.filter(d=>d.source==='flacone').forEach(d => sel.innerHTML += `<option value="${d.code}">${d.name}</option>`);
+  document.getElementById('ri-vol').value = '';
+  document.getElementById('modal-residue-input').classList.add('open');
+}
+function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
+// ════════════════════════════════════════
+// RESIDUE INPUT CRUD
+// ════════════════════════════════════════
+function saveResidueInput() {
+  const code = document.getElementById('ri-drug').value;
+  const vol  = parseFloat(document.getElementById('ri-vol').value);
+  if (!code) { alert('Seleziona un farmaco.'); return; }
+  if (!vol || vol <= 0) { alert('Inserisci un volume valido.'); return; }
+  const existing = residuesInput.find(r => r.drugCode === code);
+  if (existing) existing.volMl = vol;
+  else residuesInput.push({ drugCode: code, volMl: vol });
+  closeModal('modal-residue-input');
+  renderResidueInputList();
+}
+
+function removeResidueInput(code) {
+  residuesInput = residuesInput.filter(r => r.drugCode !== code);
+  renderResidueInputList();
+}
+
+function renderResidueInputList() {
+  const el = document.getElementById('residue-input-list');
+  if (!residuesInput.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0">Nessun residuo. I farmaci aperti dalla sessione precedente vengono inseriti qui.</div>';
+    return;
+  }
+  el.innerHTML = residuesInput.map(r => {
+    const drug = drugs.find(d => d.code === r.drugCode);
+    const srcVol = drug?.sourceVol || 100;
+    const pct = Math.min(100, Math.round(r.volMl / srcVol * 100));
+    return `<div class="residue-row">
+      <div class="residue-drug">${drug?.name || r.drugCode}</div>
+      <div style="flex:1;margin:0 8px">
+        <div class="residue-bar"><div class="residue-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="residue-vol">${r.volMl} ml</div>
+      <button class="btn btn-danger-soft btn-sm" style="margin-left:6px" onclick="removeResidueInput('${r.drugCode}')">Rimuovi</button>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// ORDERS CRUD
+// ════════════════════════════════════════
+function saveOrder() {
+  const dc = document.getElementById('o-drug').value;
+  const pt = document.getElementById('o-patient').value.trim();
+  if (!dc) { alert('Seleziona un farmaco.'); return; }
+  if (!pt) { alert('Inserisci il paziente.'); return; }
+  orders.push({
+    id: document.getElementById('o-id').value, patient: pt,
+    reparto:  document.getElementById('o-reparto').value,
+    drugCode: dc,
+    dose:     parseFloat(document.getElementById('o-dose').value)||0,
+    conc:     parseFloat(document.getElementById('o-conc').value)||0,
+    volume:   parseFloat(document.getElementById('o-volume').value)||0,
+    container:document.getElementById('o-container').value,
+    infusion: parseFloat(document.getElementById('o-infusion').value)||0,
+    priority: parseInt(document.getElementById('o-priority').value),
+    compensation: document.getElementById('o-comp').value==='1',
+    notes: document.getElementById('o-notes').value.trim(),
+  });
+  orderCounter++;
+  closeModal('modal-order'); renderOrders(); updateDrugFilter();
+}
+
+function deleteOrder(id) { orders = orders.filter(o => o.id!==id); renderOrders(); updateDrugFilter(); }
+
+function clearOrders() {
+  if (!confirm('Svuotare tutti gli ordini?')) return;
+  orders=[]; orderCounter=1; batches=[]; residuesOutput=[];
+  renderOrders();
+  document.getElementById('batch-results').style.display='none';
+  document.getElementById('scheduler-empty').style.display='block';
+  document.getElementById('opt-log-wrap').style.display='none';
+}
+
+function renderOrders() {
+  const fRep  = document.getElementById('f-rep').value;
+  const fPrio = document.getElementById('f-prio').value;
+  const fDrug = document.getElementById('f-drug').value;
+  const filtered = orders.filter(o =>
+    (!fRep  || o.reparto===fRep) &&
+    (!fPrio || String(o.priority)===fPrio) &&
+    (!fDrug || o.drugCode===fDrug)
+  );
+  document.getElementById('orders-empty').style.display = filtered.length?'none':'block';
+  document.querySelector('#orders-table thead').style.display = filtered.length?'':'none';
+  document.getElementById('orders-count').textContent = `${filtered.length} ordini`;
+
+  const pBadge = {
+    1:'<span class="badge b-urgent">P1 Urgente</span>',
+    2:'<span class="badge b-high">P2 Alta</span>',
+    3:'<span class="badge b-normal">P3 Normale</span>',
+    4:'<span class="badge b-advance">P4 Anticipo</span>',
+  };
+  document.getElementById('orders-tbody').innerHTML = filtered.map(o => {
+    const drug = drugs.find(d=>d.code===o.drugCode);
+    const src  = drug ? (drug.source==='multiprelievo'?'<span class="badge b-multi" style="margin-left:4px">Multi</span>':'<span class="badge b-flacon" style="margin-left:4px">Flac.</span>') : '';
+    const cont = o.container==='siringa' ? 'Siringa' : o.container==='sacca-gluco' ? 'Sacca Glucosata' : 'Sacca Fisiologica';
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${o.id}</td>
+      <td style="font-weight:500">${o.patient}</td>
+      <td style="font-size:12px">${o.reparto}</td>
+      <td>${drug?drug.name:o.drugCode}${src}</td>
+      <td style="font-family:var(--mono);font-size:12px">${o.dose} ${drug?.unit||''}</td>
+      <td style="font-family:var(--mono);font-size:12px">${o.volume} ml</td>
+      <td style="font-size:12px">${cont}</td>
+      <td>${pBadge[o.priority]}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${o.infusion}h${o.compensation?' · Comp.':''}</td>
+      <td><button class="btn btn-danger-soft btn-sm" onclick="deleteOrder('${o.id}')">X</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateDrugFilter() {
+  const codes = [...new Set(orders.map(o=>o.drugCode))];
+  const sel = document.getElementById('f-drug');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Tutti i Farmaci</option>';
+  codes.forEach(c => { const d=drugs.find(x=>x.code===c); sel.innerHTML+=`<option value="${c}" ${c===cur?'selected':''}>${d?d.name:c}</option>`; });
+}
+
+// ════════════════════════════════════════
+// DRUGS CRUD
+// ════════════════════════════════════════
+function saveDrug() {
+  const code = document.getElementById('d-code').value.trim().toUpperCase();
+  const name = document.getElementById('d-name').value.trim();
+  if (!code||!name) { alert('Inserisci codice e nome.'); return; }
+  if (drugs.find(d=>d.code===code)) { alert('Codice gia esistente.'); return; }
+  drugs.push({
+    code, name,
+    source:    document.getElementById('d-source').value,
+    sourceVol: parseFloat(document.getElementById('d-vol').value)||100,
+    conc:      parseFloat(document.getElementById('d-conc').value)||0,
+    unit:      document.getElementById('d-unit').value,
+    notes:     document.getElementById('d-notes').value.trim(),
+  });
+  closeModal('modal-drug'); renderDrugs();
+}
+
+function deleteDrug(code) {
+  if (orders.some(o=>o.drugCode===code)) { alert('Farmaco in uso negli ordini.'); return; }
+  drugs = drugs.filter(d=>d.code!==code); renderDrugs();
+}
+
+function renderDrugs() {
+  const tbody = document.getElementById('drugs-tbody');
+  if (!drugs.length) {
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">Nessun farmaco.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = drugs.map(d => {
+    const t = d.source==='multiprelievo' ? formatTime(TIME.sacca_sacca) : formatTime(TIME.flacone_sacca);
+    return `<tr>
+      <td style="font-family:var(--mono);font-weight:600;color:var(--accent);font-size:12px">${d.code}</td>
+      <td style="font-weight:500">${d.name}</td>
+      <td>${d.source==='multiprelievo'?'<span class="badge b-multi">Sacca Multiprelievo</span>':'<span class="badge b-flacon">Flacone</span>'}</td>
+      <td style="font-family:var(--mono);font-size:12px">${d.sourceVol||'—'} ml</td>
+      <td style="font-family:var(--mono);font-size:12px">${d.conc}</td>
+      <td style="font-family:var(--mono);font-size:12px">${d.unit}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--success)">${t}/prep.</td>
+      <td style="font-size:12px;color:var(--text2)">${d.notes}</td>
+      <td><button class="btn btn-danger-soft btn-sm" onclick="deleteDrug('${d.code}')">X</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// PRE-ESTIMATE
+// ════════════════════════════════════════
+function computeEstimate() {
+  if (!orders.length) {
+    document.getElementById('pre-estimate').innerHTML='<div class="alert alert-warn">Nessun ordine presente.</div>';
+    return;
+  }
+  const n = orders.length;
+  const urg = orders.filter(o=>o.priority===1).length;
+  const ant = orders.filter(o=>o.priority===4).length;
+  const dd  = [...new Set(orders.map(o=>o.drugCode))];
+  const estB = Math.ceil(n/8), minB = Math.ceil(n/12);
+  const totSec = orders.reduce((s,o)=>s+orderTime(o),0) + estB*TIME.setup;
+  const minSec = orders.reduce((s,o)=>s+orderTime(o),0) + minB*TIME.setup;
+  // Rough residue estimate
+  const totalResidueVol = dd.filter(c=>drugs.find(d=>d.code===c)?.source==='flacone').reduce((s,c)=>{
+    const drug = drugs.find(d=>d.code===c);
+    const totalDose = orders.filter(o=>o.drugCode===c).reduce((a,o)=>a+o.dose,0);
+    const volNeeded = drug?.conc > 0 ? totalDose / drug.conc : 0;
+    const srcVol = drug?.sourceVol || 100;
+    const flacsNeeded = Math.ceil(volNeeded / srcVol);
+    return s + Math.max(0, flacsNeeded*srcVol - volNeeded);
+  }, 0);
+
+  document.getElementById('pre-estimate').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="text-align:center;padding:10px;background:var(--accent-light);border-radius:var(--r-sm);border:1px solid #bfdbfe">
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--accent)">${minB}&ndash;${estB}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Batch stimati</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--success-light);border-radius:var(--r-sm);border:1px solid #a7f3d0">
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--success)">${formatTime(minSec)}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Tempo ottimale</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--teal-light);border-radius:var(--r-sm);border:1px solid #a5f3fc">
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--teal)">${Math.round(totalResidueVol)} ml</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Residuo stimato</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.8;font-family:var(--mono)">
+      ${n} ordini &middot; ${urg} urgenti &middot; ${ant} anticipi &middot; ${dd.length} farmaci distinti<br>
+      Setup stimato: ${formatTime(estB*TIME.setup)} su ${estB} batch
+    </div>`;
+}
+
+// ════════════════════════════════════════
+// SCHEDULER ENGINE
+// ════════════════════════════════════════
+function runScheduler() {
+  if (!orders.length) { alert('Nessun ordine.'); return; }
+  if (!drugs.length)  { alert('Nessun farmaco in anagrafica.'); return; }
+
+  const strategy   = document.getElementById('opt-strategy').value;
+  const prioW      = parseInt(document.getElementById('opt-prio-w').value);
+  const groupW     = parseInt(document.getElementById('opt-group-w').value);
+  const residueW   = parseInt(document.getElementById('opt-residue-w').value);
+  const anticipoLast = document.getElementById('opt-anticipo').checked;
+  const drainRes   = document.getElementById('opt-drain-res').checked;
+
+  const log = [];
+  log.push(`<span class="log-info">Schedulazione avviata — strategia: ${strategy}</span>`);
+  log.push(`<span class="log-dim">  ${orders.length} ordini | pesi: priorita=${prioW}, raggruppamento=${groupW}, residui=${residueW}</span>`);
+  if (residuesInput.length) {
+    log.push(`<span class="log-res">  Residui iniziali: ${residuesInput.map(r=>{const d=drugs.find(x=>x.code===r.drugCode);return `${d?d.name:r.drugCode} ${r.volMl}ml`;}).join(' | ')}</span>`);
+  }
+
+  // Running residue state (carries forward across batches)
+  let runningResidues = {}; // drugCode -> volMl
+  residuesInput.forEach(r => { runningResidues[r.drugCode] = r.volMl; });
+
+  let pool = [...orders];
+  pool.forEach(o => {
+    const drug = drugs.find(d=>d.code===o.drugCode);
+    o._score = (5 - o.priority) * prioW * 2;
+    if (anticipoLast && o.priority===4) o._score -= 60;
+    // Bonus for drugs with open residues (helps drain them)
+    if (drainRes && runningResidues[o.drugCode] > 0) o._score += residueW * 3;
+  });
+  pool.sort((a,b) => b._score - a._score);
+
+  const drugFreq = {};
+  pool.forEach(o => { drugFreq[o.drugCode] = (drugFreq[o.drugCode]||0)+1; });
+
+  batches = []; residuesOutput = [];
+  const assigned = new Set();
+
+  while (assigned.size < pool.length) {
+    const remaining = pool.filter(o => !assigned.has(o.id));
+    if (!remaining.length) break;
+
+    let batch = [];
+    let seed;
+
+    if (strategy === 'residue-first') {
+      // Seed with a drug that has an open residue first; then by freq
+      const withRes = remaining.filter(o => runningResidues[o.drugCode] > 0);
+      if (withRes.length) seed = withRes[0];
+      else {
+        const top = Object.entries(drugFreq).filter(([c])=>remaining.some(o=>o.drugCode===c)).sort((a,b)=>b[1]-a[1])[0];
+        seed = remaining.find(o=>o.drugCode===top[0]);
+      }
+    } else if (strategy === 'group-first') {
+      const top = Object.entries(drugFreq).filter(([c])=>remaining.some(o=>o.drugCode===c)).sort((a,b)=>b[1]-a[1])[0];
+      seed = remaining.find(o=>o.drugCode===top[0]);
+    } else {
+      seed = remaining[0];
+    }
+
+    batch.push(seed); assigned.add(seed.id);
+
+    // Fill batch: try to add orders that share drugs already in batch (grouping)
+    // or drain residues (residue-first)
+    for (const c of remaining) {
+      if (assigned.has(c.id)) continue;
+      const tb = [...batch, c];
+      if (batchIsValid(tb, runningResidues)) {
+        // Score candidate: prefer same drug, or residue drain
+        const sameGroup = batch.some(b => b.drugCode === c.drugCode);
+        const hasRes    = runningResidues[c.drugCode] > 0;
+        const bonus = (sameGroup ? groupW : 0) + (hasRes && drainRes ? residueW : 0);
+        if (bonus > 0 || strategy === 'priority-first' || strategy === 'balanced') {
+          batch.push(c); assigned.add(c.id);
+        }
+      }
+    }
+    // Fill remaining slots with any valid order
+    for (const c of remaining) {
+      if (assigned.has(c.id)) continue;
+      const tb = [...batch, c];
+      if (batchIsValid(tb, runningResidues)) { batch.push(c); assigned.add(c.id); }
+    }
+
+    const res  = computeBatchResources(batch, runningResidues);
+    const bRes = computeBatchResidues(batch, runningResidues);
+
+    // Update running residues for next batch
+    for (const [code, info] of Object.entries(bRes)) {
+      runningResidues[code] = info.residue;
+    }
+
+    const bIdx = batches.length + 1;
+    const bObj = {
+      id: `BATCH-${String(bIdx).padStart(2,'0')}`,
+      orders: batch, resources: res,
+      batchResidues: bRes,
+      prevResidues: {...runningResidues}, // snapshot after this batch
+    };
+    bObj.timeSec = batch.reduce((s,o)=>s+orderTime(o),0);
+    batches.push(bObj);
+
+    // Residue summary for log
+    const resLog = Object.entries(bRes).filter(([,v])=>v.residue>0.1).map(([c,v])=>{
+      const d=drugs.find(x=>x.code===c);
+      return `${d?d.name:c}: ${v.residue}ml`;
+    }).join(', ');
+
+    log.push(`<span class="log-ok">OK ${bObj.id}: ${batch.length} ordini | [${res.drugCodes.join(', ')}] | ${formatTime(bObj.timeSec)}</span>`);
+    if (resLog) log.push(`<span class="log-res">   Residui batch: ${resLog}</span>`);
+
+    batch.forEach(o => { drugFreq[o.drugCode] = Math.max(0,(drugFreq[o.drugCode]||0)-1); });
+  }
+
+  // Collect final residues output
+  residuesOutput = Object.entries(runningResidues)
+    .filter(([,v]) => v > 0.1)
+    .map(([code, volMl]) => ({ drugCode:code, volMl:Math.round(volMl*10)/10 }));
+
+  const totalTime = batches.reduce((s,b)=>s+b.timeSec+TIME.setup,0);
+  const totalRes  = residuesOutput.reduce((s,r)=>s+r.volMl, 0);
+  log.push(`<span class="log-info">Completato — ${batches.length} batch | ${formatTime(totalTime)} totali | residuo finale: ${Math.round(totalRes)} ml</span>`);
+
+  document.getElementById('opt-log-wrap').style.display='block';
+  document.getElementById('opt-log').innerHTML = log.join('<br>');
+  renderBatches();
+  refreshMachineBatchSelect();
+  refreshResidueView();
+  refreshDashboard();
+}
+
+// ════════════════════════════════════════
+// RENDER BATCHES
+// ════════════════════════════════════════
+function renderBatches() {
+  document.getElementById('scheduler-empty').style.display='none';
+  document.getElementById('batch-results').style.display='block';
+  const totalSec = batches.reduce((s,b)=>s+b.timeSec+TIME.setup,0);
+  document.getElementById('batch-summary').textContent =
+    `${batches.length} batch | ${orders.length} ordini | ${formatTime(totalSec)} totali`;
+
+  document.getElementById('batch-list').innerHTML = batches.map((b,i) => {
+    const r = b.resources;
+    const fillPct = Math.min(100, Math.round(b.orders.length/r.maxFinal*100));
+    const sPct    = Math.min(100, Math.round(r.siringeTotali/MACHINE.maxSiringhe*100));
+    const fPct    = Math.min(100, Math.round(r.slotsFlaconTot/MACHINE.maxFlaconiTot*100));
+
+    const chips = b.orders.map(o => {
+      const drug = drugs.find(d=>d.code===o.drugCode);
+      const flags = [
+        o.compensation ? '<span style="font-size:9px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:3px;font-family:var(--mono)">COMP</span>' : '',
+      ].filter(Boolean).join('');
+      return `<div class="order-row">
+        <div class="order-prio p${o.priority}"></div>
+        <div class="order-id">${o.id}</div>
+        <div class="order-patient">${o.patient}</div>
+        <div class="order-drug">${drug?.name||o.drugCode}</div>
+        ${flags?`<div class="order-flags">${flags}</div>`:''}
+      </div>`;
+    }).join('');
+
+    // Residue panel
+    const resEntries = Object.entries(b.batchResidues||{}).filter(([,v])=>v.residue>0.1);
+    const resPanel = resEntries.length ? `
+      <div class="residue-panel" style="grid-column:1/3">
+        <div class="residue-title">Residui generati da questo batch</div>
+        ${resEntries.map(([code,v])=>{
+          const drug=drugs.find(d=>d.code===code);
+          const pct=Math.min(100,Math.round(v.residue/(drug?.sourceVol||100)*100));
+          return `<div class="residue-row">
+            <div class="residue-drug">${drug?.name||code}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);width:100px;flex-shrink:0">
+              ${v.flacsOpened} fl. aperti${v.usedFromPrev>0?' · da residuo: '+v.usedFromPrev+'ml':''}
+            </div>
+            <div class="residue-bar" style="flex:1"><div class="residue-bar-fill" style="width:${pct}%"></div></div>
+            <div class="residue-vol">${v.residue} ml</div>
+          </div>`;
+        }).join('')}
+      </div>` : '';
+
+    return `<div class="batch-card" style="animation-delay:${i*.04}s">
+      <div class="batch-head">
+        <div class="batch-num">${i+1}</div>
+        <div class="batch-meta">
+          <div class="batch-id">${b.id}</div>
+          <div class="batch-sub">${b.orders.length} ordini | ${r.drugCodes.length} farmaci | ${r.slotsRes>0?r.slotsRes+' residui usati':'nessun residuo portato avanti'}${r.hasMulti?' | multiprelievo':''}</div>
+        </div>
+        <div class="batch-time-chip">${formatTime(b.timeSec)}</div>
+      </div>
+      <div class="batch-body">
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px">Risorse</div>
+          <div class="prog-wrap"><div class="prog-head"><span class="prog-label">Contenitori (${b.orders.length}/${r.maxFinal})</span><span class="prog-val">${fillPct}%</span></div><div class="prog-track"><div class="prog-fill ${fillPct>=90?'p-amber':'p-blue'}" style="width:${fillPct}%"></div></div></div>
+          <div class="prog-wrap"><div class="prog-head"><span class="prog-label">Siringhe (${r.siringeTotali}/${MACHINE.maxSiringhe})</span><span class="prog-val">${sPct}%</span></div><div class="prog-track"><div class="prog-fill ${sPct>=90?'p-amber':'p-blue'}" style="width:${sPct}%"></div></div></div>
+          <div class="prog-wrap"><div class="prog-head"><span class="prog-label">Flaconi ${r.slotsRes>0?`(${r.slotsNew} nuovi + ${r.slotsRes} residui)`:`(${r.slotsNew}/${MACHINE.maxFlaconiTot})`}</span><span class="prog-val">${fPct}%</span></div><div class="prog-track"><div class="prog-fill p-green" style="width:${fPct}%"></div></div></div>
+          ${!r.hasMulti?'<div style="font-size:11px;color:var(--success);margin-top:4px">+4 slot liberati (nessun multiprelievo)</div>':''}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px">Ordini</div>
+          ${chips}
+        </div>
+        ${resPanel}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// RESIDUE VIEW (tab)
+// ════════════════════════════════════════
+function refreshResidueView() {
+  const el = document.getElementById('residue-view');
+  if (!batches.length) {
+    el.innerHTML = `<div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r)">
+      <div class="empty-icon">[ ]</div>
+      <div class="empty-text">Eseguire la schedulazione per visualizzare l'analisi dei residui.</div>
+    </div>`;
+    return;
+  }
+
+  // Per-batch residue summary
+  const batchRows = batches.map((b,i) => {
+    const resEntries = Object.entries(b.batchResidues||{});
+    const totalResVol = resEntries.reduce((s,[,v])=>s+v.residue,0);
+    const carried = Object.entries(b.batchResidues||{}).filter(([,v])=>v.usedFromPrev>0);
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:12px;font-weight:600">${b.id}</td>
+      <td style="font-size:12px">${resEntries.filter(([,v])=>v.flacsOpened>0).map(([c,v])=>{const d=drugs.find(x=>x.code===c);return `${d?d.name:c} x${v.flacsOpened}`;}).join(', ')||'—'}</td>
+      <td style="font-size:12px">${carried.length ? carried.map(([c,v])=>{const d=drugs.find(x=>x.code===c);return `${d?d.name:c}: ${v.usedFromPrev}ml`;}).join(', ') : '<span style="color:var(--text3)">—</span>'}</td>
+      <td style="font-family:var(--mono);font-size:12px;color:${totalResVol>0?'var(--teal)':'var(--success)'}">${totalResVol>0.1 ? Math.round(totalResVol*10)/10+' ml' : 'zero'}</td>
+    </tr>`;
+  }).join('');
+
+  // Final residue summary
+  const finalRows = residuesOutput.length ? residuesOutput.map(r => {
+    const drug = drugs.find(d=>d.code===r.drugCode);
+    const srcVol = drug?.sourceVol || 100;
+    const pct = Math.min(100, Math.round(r.volMl/srcVol*100));
+    return `<div class="residue-row">
+      <div class="residue-drug" style="min-width:180px">${drug?.name||r.drugCode}</div>
+      <div class="residue-bar" style="flex:1;margin:0 12px"><div class="residue-bar-fill" style="width:${pct}%"></div></div>
+      <div class="residue-vol">${r.volMl} ml su ${srcVol} ml (${pct}%)</div>
+    </div>`;
+  }).join('') : '<div style="color:var(--success);font-size:13px;font-weight:600">Nessun residuo a fine giornata — ottimizzazione completa.</div>';
+
+  const totalRes = residuesOutput.reduce((s,r)=>s+r.volMl,0);
+  const savedFlacs = batches.reduce((s,b)=>s+Object.values(b.batchResidues||{}).reduce((a,v)=>a+(v.usedFromPrev>0?1:0),0),0);
+
+  el.innerHTML = `
+    <div class="four-col" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-val c-teal">${Math.round(totalRes)} ml</div><div class="stat-label">Residuo Totale Finale</div><div class="stat-sub">${residuesOutput.length} farmaci con residuo</div></div>
+      <div class="stat-card"><div class="stat-val c-green">${savedFlacs}</div><div class="stat-label">Ricarichi Evitati</div><div class="stat-sub">sorgenti portate avanti</div></div>
+      <div class="stat-card"><div class="stat-val c-blue">${batches.reduce((s,b)=>s+Object.values(b.batchResidues||{}).reduce((a,v)=>a+v.flacsOpened,0),0)}</div><div class="stat-label">Flaconi Aperti Totali</div><div class="stat-sub">in tutta la giornata</div></div>
+      <div class="stat-card"><div class="stat-val c-amber">${batches.length}</div><div class="stat-label">Batch Totali</div><div class="stat-sub">cicli macchina</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><div class="card-title"><div class="card-dot"></div>Utilizzo Sorgenti per Batch</div></div>
+      <div style="overflow:hidden">
+        <table>
+          <thead><tr><th>Batch</th><th>Flaconi Aperti</th><th>Residui Usati (da batch precedente)</th><th>Residuo Generato</th></tr></thead>
+          <tbody>${batchRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--teal)"></div>Residui a Fine Giornata</div></div>
+      <div class="card-body">
+        <div class="residue-panel" style="background:${totalRes>0?'var(--teal-light)':'var(--success-light)'};border-color:${totalRes>0?'#a5f3fc':'#a7f3d0'}">
+          ${finalRows}
+        </div>
+        ${totalRes>0?'<div class="alert alert-info" style="margin-top:12px;margin-bottom:0">Questi residui possono essere inseriti nella sezione "Residui Aperti" della prossima sessione per essere portati avanti.</div>':''}
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════
+// MACHINE VIEW
+// ════════════════════════════════════════
+function refreshMachineBatchSelect() {
+  const sel = document.getElementById('machine-batch-sel');
+  sel.innerHTML = '<option value="">Seleziona Batch</option>';
+  batches.forEach(b => sel.innerHTML += `<option value="${b.id}">${b.id} (${b.orders.length} ordini)</option>`);
+  if (batches.length) {
+    document.getElementById('machine-no-batches').style.display='none';
+    document.getElementById('machine-content').style.display='block';
+    renderGlobalTimeEst();
+    sel.value = batches[0].id;
+    renderMachineView();
+  } else {
+    document.getElementById('machine-no-batches').style.display='flex';
+    document.getElementById('machine-content').style.display='none';
+  }
+}
+
+function renderGlobalTimeEst() {
+  const totProd  = batches.reduce((s,b)=>s+b.timeSec,0);
+  const totSetup = batches.length * TIME.setup;
+  const tot      = totProd + totSetup;
+  const avgEff   = batches.reduce((s,b)=>s+b.orders.length/b.resources.maxFinal,0)/batches.length;
+  document.getElementById('total-time-chip').textContent = `Totale: ${formatTime(tot)}`;
+  document.getElementById('global-est-grid').innerHTML = `
+    <div class="est-item"><div class="est-item-lbl">Produzione</div><div class="est-item-val c-blue">${formatTime(totProd)}</div><div class="est-item-sub">${batches.length} batch</div></div>
+    <div class="est-item"><div class="est-item-lbl">Setup/Carico</div><div class="est-item-val c-amber">${formatTime(totSetup)}</div><div class="est-item-sub">${formatTime(TIME.setup)} x ${batches.length}</div></div>
+    <div class="est-item"><div class="est-item-lbl">Efficienza Slot</div><div class="est-item-val c-green">${Math.round(avgEff*100)}%</div><div class="est-item-sub">media contenitori usati</div></div>`;
+  const maxBT = Math.max(...batches.map(b=>b.timeSec),1);
+  document.getElementById('batch-time-bars').innerHTML = batches.map(b=>`
+    <div class="time-row">
+      <div class="time-batch-id">${b.id}</div>
+      <div class="time-bar-wrap"><div class="time-bar" style="width:${Math.max(4,Math.round(b.timeSec/maxBT*100))}%"></div></div>
+      <div class="time-val">${formatTime(b.timeSec)}</div>
+    </div>`).join('');
+}
+
+function renderMachineView() {
+  const selVal = document.getElementById('machine-batch-sel').value;
+  const b = batches.find(x=>x.id===selVal);
+  if (!b) return;
+  const r = b.resources;
+  document.getElementById('machine-batch-lbl').textContent = `${b.id} — ${b.orders.length} ordini`;
+  document.getElementById('machine-status-text').textContent = `${r.drugCodes.length} farmaci | ${formatTime(b.timeSec)}`;
+
+  // Multiprelievo slots (4)
+  document.getElementById('zm-slots').innerHTML = Array(4).fill(0).map((_,i)=>{
+    const code = r.multiDrugs[i]; const drug=code?drugs.find(d=>d.code===code):null;
+    return `<div class="slot ${code?'s-multi':'s-empty'}" data-tip="${drug?drug.name:'Libero'}">${code?code.slice(0,2):''}</div>`;
+  }).join('');
+  document.getElementById('zm-count').textContent=`${r.multiDrugs.length}/4`;
+
+  // Flaconi slots (18: 12 new + 6 res)
+  const allFlacSlots = [
+    ...r.flaconNew.map(c=>({code:c,type:'new'})),
+    ...r.flaconRes.map(c=>({code:c,type:'res'})),
+  ];
+  document.getElementById('zf-slots').innerHTML = Array(18).fill(0).map((_,i)=>{
+    const s = allFlacSlots[i];
+    if (!s) return `<div class="slot s-empty" data-tip="Libero"></div>`;
+    const drug=drugs.find(d=>d.code===s.code);
+    return `<div class="slot ${s.type==='res'?'s-res-flac':'s-new-flac'}" data-tip="${drug?drug.name:s.code} (${s.type==='res'?'residuo':'nuovo'})">${s.code.slice(0,2)}</div>`;
+  }).join('');
+  document.getElementById('zf-count').textContent=`${r.slotsFlaconTot}/18`;
+
+  // Siringhe (20)
+  document.getElementById('zs-slots').innerHTML = Array(20).fill(0).map((_,i)=>{
+    let cls='s-empty',tip='Libero',lbl='';
+    if (i<r.siringheAllest){cls='s-syr-work';tip=`Allestimento ${r.drugCodes[i]||''}`;lbl=r.drugCodes[i]?r.drugCodes[i].slice(0,2):'';}
+    else if (i<r.siringheAllest+r.siringheFinali){cls='s-syr-final';tip='Bolo finale';lbl='B';}
+    return `<div class="slot ${cls}" data-tip="${tip}">${lbl}</div>`;
+  }).join('');
+  document.getElementById('zs-count').textContent=`${r.siringeTotali}/20`;
+
+  // Contenitori finali
+  const maxF=r.maxFinal;
+  document.getElementById('zc-slots').innerHTML = Array(maxF+(!r.hasMulti?4:0)).fill(0).map((_,i)=>{
+    const o=b.orders[i];
+    if (!o) return `<div class="slot ${i<maxF?'s-empty':''}" style="${i>=maxF?'background:var(--success-light);border-color:#a7f3d0':''}" data-tip="${i>=maxF?'+4 liberati':'Libero'}"></div>`;
+    return `<div class="slot s-cont" data-tip="${o.patient}">${o.container==='siringa'?'B':'S'}</div>`;
+  }).join('');
+  document.getElementById('zc-count').textContent=`${b.orders.length}/${maxF}${!r.hasMulti?' (+4)':''}`;
+  document.getElementById('zc-note').textContent=!r.hasMulti?'+ 4 slot aggiuntivi (nessun multiprelievo caricato)':'';
+
+  // Order detail table
+  document.getElementById('machine-order-detail').innerHTML = `
+    <div class="table-wrap" style="box-shadow:none">
+    <table style="font-size:12px">
+      <thead><tr><th>ID</th><th>Paziente</th><th>Farmaco</th><th>Contenitore</th><th>Comp.</th><th>Tempo</th></tr></thead>
+      <tbody>${b.orders.map(o=>{
+        const drug=drugs.find(d=>d.code===o.drugCode);
+        return `<tr>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--text3)">${o.id}</td>
+          <td style="font-weight:500">${o.patient}</td>
+          <td>${drug?drug.name:o.drugCode}</td>
+          <td>${o.container==='siringa'?'Siringa':'Sacca'}</td>
+          <td>${o.compensation?'<span class="badge b-recon">Si</span>':'—'}</td>
+          <td style="font-family:var(--mono);color:var(--success);font-weight:600">${formatTime(orderTime(o))}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+
+  // Time breakdown
+  const totBatch = b.timeSec + TIME.setup;
+  const nMulti = b.orders.filter(o=>drugs.find(d=>d.code===o.drugCode)?.source==='multiprelievo').length;
+  const nFlac  = b.orders.filter(o=>{const d=drugs.find(x=>x.code===o.drugCode);return d?.source==='flacone'&&o.container!=='siringa';}).length;
+  const nBolo  = r.siringheFinali;
+  document.getElementById('machine-time-detail').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px">
+      <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Produzione</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent)">${formatTime(b.timeSec)}</div></div>
+      <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Setup carico</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--warning)">${formatTime(TIME.setup)}</div></div>
+      <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Totale batch</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--success)">${formatTime(totBatch)}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono);line-height:1.9">
+      Sacca da multiprelievo: ${nMulti} x ${formatTime(TIME.sacca_sacca)} = ${formatTime(nMulti*TIME.sacca_sacca)}<br>
+      Sacca da flacone: ${nFlac} x ${formatTime(TIME.flacone_sacca)} = ${formatTime(nFlac*TIME.flacone_sacca)}<br>
+      Boli (siringhe): ${nBolo} x ${formatTime(TIME.bolo)} = ${formatTime(nBolo*TIME.bolo)}
+    </div>`;
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function barChart(label, val, max, color) {
+  const pct = Math.min(100, Math.round(val/Math.max(max,1)*100));
+  return `<div style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+      <span style="font-weight:500">${label}</span><span style="font-family:var(--mono);color:var(--text2)">${val}</span>
+    </div>
+    <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width .5s"></div>
+    </div>
+  </div>`;
+}
+
+function refreshDashboard() {
+  document.getElementById('st-orders').textContent = orders.length;
+  document.getElementById('st-orders-sub').textContent = `${orders.filter(o=>o.priority===1).length} urgenti`;
+  document.getElementById('st-batches').textContent = batches.length||'—';
+  document.getElementById('st-batches-sub').textContent = batches.length?`${orders.length} ordini`:'Non ancora schedulato';
+  const dd = [...new Set(orders.map(o=>o.drugCode))];
+  document.getElementById('st-drugs').textContent = dd.length;
+  document.getElementById('st-drugs-sub').textContent = `${drugs.filter(d=>d.source==='multiprelievo'&&dd.includes(d.code)).length} da multiprelievo`;
+  const totalRes = residuesOutput.reduce((s,r)=>s+r.volMl,0);
+  document.getElementById('st-residue').textContent = batches.length ? Math.round(totalRes)+' ml' : '—';
+
+  const repC={}; orders.forEach(o=>{repC[o.reparto]=(repC[o.reparto]||0)+1;});
+  document.getElementById('chart-rep').innerHTML = Object.entries(repC).sort((a,b)=>b[1]-a[1]).map(([r,c])=>barChart(r,c,orders.length,'var(--accent)')).join('')||'<div style="color:var(--text3);font-size:12px">Nessun dato</div>';
+
+  const pC={1:0,2:0,3:0,4:0}; orders.forEach(o=>{pC[o.priority]++;});
+  const pL={1:'P1 Urgente',2:'P2 Alta',3:'P3 Normale',4:'P4 Anticipo'};
+  const pCl={1:'var(--danger)',2:'var(--warning)',3:'var(--accent)',4:'var(--text3)'};
+  const maxP=Math.max(...Object.values(pC),1);
+  document.getElementById('chart-prio').innerHTML=[1,2,3,4].map(p=>barChart(pL[p],pC[p],maxP,pCl[p])).join('');
+
+  const dC={}; orders.forEach(o=>{dC[o.drugCode]=(dC[o.drugCode]||0)+1;});
+  const maxD=Math.max(...Object.values(dC),1);
+  document.getElementById('chart-drugs').innerHTML=Object.entries(dC).sort((a,b)=>b[1]-a[1]).map(([c,n])=>{const d=drugs.find(x=>x.code===c);return barChart(d?d.name:c,n,maxD,'var(--purple)');}).join('')||'<div style="color:var(--text3);font-size:12px">Nessun dato</div>';
+}
+
+// ════════════════════════════════════════
+// CSV
+// ════════════════════════════════════════
+const DRUG_PRESETS = {
+  CIS:{name:'Cisplatino',      source:'flacone',       conc:1,    unit:'mg',  sourceVol:100, notes:''},
+  GEM:{name:'Gemcitabina',     source:'multiprelievo', conc:10,   unit:'mg',  sourceVol:200, notes:''},
+  FUO:{name:'5-Fluorouracile', source:'multiprelievo', conc:50,   unit:'mg',  sourceVol:500, notes:''},
+  KCL:{name:'Cloruro Potassio',source:'flacone',       conc:2,    unit:'mEq', sourceVol:50,  notes:''},
+  OXA:{name:'Oxaliplatino',    source:'flacone',       conc:0.5,  unit:'mg',  sourceVol:100, notes:''},
+  DOC:{name:'Docetaxel',       source:'flacone',       conc:0.74, unit:'mg',  sourceVol:108, notes:''},
+  PAC:{name:'Paclitaxel',      source:'multiprelievo', conc:1.2,  unit:'mg',  sourceVol:300, notes:''},
+  IRI:{name:'Irinotecan',      source:'flacone',       conc:20,   unit:'mg',  sourceVol:5,   notes:''},
+};
+
+function parseCSVLine(line) {
+  const r=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){r.push(cur.trim());cur='';}else{cur+=c;}}
+  r.push(cur.trim()); return r;
+}
+
+function importCSV(ev) {
+  const file=ev.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){showToast('warn','File vuoto.');return;}
+    const hdr=parseCSVLine(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,'_'));
+    const idx=n=>hdr.indexOf(n);
+    const req=['paziente','reparto','farmaco_codice','dose','volume_ml','priorita'];
+    const miss=req.filter(r=>idx(r)===-1);
+    if(miss.length){showToast('warn',`Colonne mancanti: ${miss.join(', ')}`);return;}
+    let imp=0,skip=0,dAdd=0; const newO=[];
+    for(let i=1;i<lines.length;i++){
+      const cols=parseCSVLine(lines[i]); if(cols.length<3) continue;
+      const get=n=>idx(n)>=0?(cols[idx(n)]||'').trim():'';
+      const paz=get('paziente'),dc=get('farmaco_codice').toUpperCase();
+      if(!paz||!dc){skip++;continue;}
+      if(!drugs.find(d=>d.code===dc)){drugs.push({code:dc,...(DRUG_PRESETS[dc]||{name:dc,source:'flacone',conc:0,unit:'mg',sourceVol:100,notes:'CSV'})});dAdd++;}
+      const csvId=get('id');
+      const oid=csvId&&csvId.startsWith('ORD-')?csvId:`ORD-${String(orderCounter).padStart(3,'0')}`;
+      if(orders.find(o=>o.id===oid)||newO.find(o=>o.id===oid)){skip++;continue;}
+      const cMap={'sacca-fisio':'sacca-fisio','sacca-gluco':'sacca-gluco','siringa':'siringa','sacca_fisio':'sacca-fisio','sacca_gluco':'sacca-gluco'};
+      newO.push({id:oid,patient:paz,reparto:get('reparto')||'Reparto 1',drugCode:dc,
+        dose:parseFloat(get('dose'))||0,conc:parseFloat(get('concentrazione'))||0,volume:parseFloat(get('volume_ml'))||0,
+        container:cMap[get('contenitore').toLowerCase()]||'sacca-fisio',infusion:parseFloat(get('durata_infusione_h'))||0,
+        priority:Math.min(4,Math.max(1,parseInt(get('priorita'))||3)),
+        compensation:['si','si','yes','1','true'].includes(get('compensazione').toLowerCase()),
+        notes:get('note')||get('notes')||''});
+      orderCounter++; imp++;
+    }
+    orders=[...orders,...newO];
+    renderOrders();renderDrugs();updateDrugFilter();refreshDashboard();
+    ev.target.value='';
+    showToast('success',`Importati ${imp} ordini.${dAdd?` ${dAdd} farmaci aggiunti.`:''}${skip?` ${skip} ignorate.`:''}`);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function exportCSV() {
+  if(!orders.length){alert('Nessun ordine.');return;}
+  const hdr='id,paziente,reparto,farmaco_codice,dose,concentrazione,volume_ml,contenitore,durata_infusione_h,priorita,compensazione,note';
+  const rows=orders.map(o=>[o.id,`"${o.patient}"`,o.reparto,o.drugCode,o.dose,o.conc,o.volume,o.container,o.infusion,o.priority,o.compensation?'si':'no',`"${o.notes}"`].join(','));
+  const blob=new Blob([[hdr,...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`ordini_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+}
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+function showToast(type,msg) {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast';
+  const cfg={success:{bg:getCS('--success-light'),border:'#a7f3d0',color:getCS('--success')},warn:{bg:getCS('--warning-light'),border:'#fcd34d',color:getCS('--warning')}};
+  const c=cfg[type]||cfg.warn;
+  t.style.cssText=`background:${c.bg};border:1px solid ${c.border};color:${c.color}`;
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',3500);
+  setTimeout(()=>t.remove(),4000);
+}
+function getCS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+renderOrders(); renderDrugs(); refreshDashboard();
+</script>
+
+<!-- Sticky bottom run bar (touch only) -->
+<div id="sticky-run-bar" style="display:none">
+  <button class="btn btn-success btn-full" style="min-height:52px;font-size:16px;font-weight:600;border-radius:12px" onclick="runScheduler()">Esegui Schedulazione</button>
+</div>
+
+<style>
+#sticky-run-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 20px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  background: rgba(248,250,252,0.96);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 90;
+}
+@media (pointer: coarse) {
+  .desktop-run-btn { display: none !important; }
+  .btn:active { opacity: 0.72; transform: scale(0.96); transition: none; }
+  .tab-btn:active { background: var(--surface2); opacity: 0.8; transition: none; }
+  .btn, .tab-btn { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .table-wrap { position: relative; }
+  .table-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 28px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.85));
+    pointer-events: none;
+    border-radius: 0 var(--r) var(--r) 0;
+  }
+  .main { padding-bottom: 88px !important; }
+}
+.modal-handle {
+  width: 38px; height: 4px;
+  background: var(--border2); border-radius: 2px;
+  margin: 10px auto 4px; flex-shrink: 0;
+}
+</style>
+
+<script>
+// ── TOUCH ENHANCEMENTS ──
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
+
+function updateStickyBar(tabName) {
+  const bar = document.getElementById('sticky-run-bar');
+  if (!bar) return;
+  bar.style.display = (isTouch && tabName === 'scheduler') ? 'block' : 'none';
+}
+
+// Wrap showTab to update sticky bar
+const _origShowTab = showTab;
+window.showTab = function(name, btn) {
+  _origShowTab(name, btn);
+  updateStickyBar(name);
+};
+
+if (isTouch) {
+  // Add drag handle to modals
+  document.querySelectorAll('.modal').forEach(m => {
+    const h = document.createElement('div');
+    h.className = 'modal-handle';
+    m.insertBefore(h, m.firstChild);
+  });
+
+  // Swipe down to close modal
+  document.querySelectorAll('.overlay').forEach(ov => {
+    let startY = 0;
+    ov.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+    ov.addEventListener('touchend', e => {
+      if (e.changedTouches[0].clientY - startY > 80) ov.classList.remove('open');
+    }, { passive: true });
+  });
+
+  // Scroll active tab into center view when tapped
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }), 60);
+    });
+  });
+}
+
+updateStickyBar('orders');
+</script>
+</body>
+</html>
